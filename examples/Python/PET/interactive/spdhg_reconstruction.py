@@ -245,7 +245,7 @@ def OperatorSubsetsPET(op, num_subsets):
             for ind in range(num_subsets)]
         
 num_subsets = 16
-num_epochs = 3
+num_epochs = 5
 num_iter = num_epochs * num_subsets
 
 A = OperatorSubsetsPET(am, num_subsets)
