@@ -336,6 +336,16 @@ class DataContainer(ABC):
             (a.real, a.imag, x.handle, b.real, b.imag, y.handle)
         return z;
 
+    def copy(self):
+        '''alias of clone'''
+        return self.clone()
+    def conjugate(self):
+        '''Returns the complex conjugate of the data '''
+        if self.handle is not None:
+            array = self.as_array()
+            self.fill(array.conjugate())
+            return self
+        
 class CoilImageData(DataContainer):
     '''
     Class for a coil images container.
@@ -1128,6 +1138,10 @@ class AcquisitionModel:
             (self.handle, ad.handle)
         check_status(image.handle)
         return image
+    def direct(self, image):
+        return self.forward(image)
+    def adjoint(self, ad):
+        return self.backward(ad)
 
 class Gadget:
     '''

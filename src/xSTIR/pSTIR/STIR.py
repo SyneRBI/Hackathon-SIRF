@@ -328,6 +328,9 @@ class DataContainer(ABC):
             return z;
         else:
             raise error('wrong multiplier')
+    def copy(self):
+        '''alias of clone'''
+        return self.clone()
 
 class ImageData(DataContainer):
     '''Class for PET image data objects.
@@ -1035,7 +1038,7 @@ class AcquisitionSensitivityModel:
         if self.handle is not None:
             pyiutil.deleteDataHandle(self.handle)
 
-class AcquisitionModel:
+class AcquisitionModel(object):
     ''' 
     Class for a PET acquisition model that relates an image x to the
     acquisition data y as
@@ -1068,6 +1071,11 @@ class AcquisitionModel:
         '''
         assert_validity(acq_templ, AcquisitionData)
         assert_validity(img_templ, ImageData)
+
+        # temporary save the templates in the class
+        self.acq_templ = acq_templ
+        self.img_templ = img_templ
+
         try_calling(pystir.cSTIR_setupAcquisitionModel\
             (self.handle, acq_templ.handle, img_templ.handle))
     def set_additive_term(self, at):
@@ -1120,6 +1128,18 @@ class AcquisitionModel:
             (self.handle, ad.handle, subset_num, num_subsets)
         check_status(image.handle)
         return image
+    def get_linear_acquisition_model(self):
+        am = type(self)()
+        am.set_up( self.acq_templ, self.img_templ )
+        return am
+    def direct(self, image, subset_num = 0, num_subsets = 1, ad = None):
+        return self.get_linear_acquisition_model().forward(image, \
+                                             subset_num=subset_num, \
+                                             num_subsets = num_subsets, \
+                                             ad = ad)
+    def adjoint(self, ad, subset_num = 0, num_subsets = 1):
+        return self.backward(ad, subset_num = subset_num, 
+                             num_subsets = num_subsets)
 
 class AcquisitionModelUsingMatrix(AcquisitionModel):
     ''' 
